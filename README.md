@@ -99,7 +99,7 @@ Create files in `app/api/` following Next.js conventions
 2. Run migrations
 3. Update TypeScript types in `lib/db/`
 
-## Support
+## Support 
 
 - **Vercel Issues**: [vercel.com/docs](https://vercel.com/docs)
 - **Next.js**: [nextjs.org/docs](https://nextjs.org/docs)
