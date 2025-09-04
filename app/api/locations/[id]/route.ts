@@ -3,14 +3,20 @@ import { sql } from '@vercel/postgres';
 import { jwtVerify } from 'jose';
 import { cookies } from 'next/headers';
 
-async function getUserFromToken() {
+interface UserPayload {
+  id: number;
+  username: string;
+  role: string;
+}
+
+async function getUserFromToken(): Promise<UserPayload | null> {
   const token = cookies().get('auth-token')?.value;
   if (!token) return null;
   
   try {
     const secret = new TextEncoder().encode(process.env.JWT_SECRET || 'secret');
     const { payload } = await jwtVerify(token, secret);
-    return payload;
+    return payload as UserPayload;
   } catch {
     return null;
   }
