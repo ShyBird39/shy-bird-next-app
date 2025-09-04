@@ -16,7 +16,7 @@ async function getUserFromToken(): Promise<UserPayload | null> {
   try {
     const secret = new TextEncoder().encode(process.env.JWT_SECRET || 'secret');
     const { payload } = await jwtVerify(token, secret);
-    return payload as UserPayload;
+    return payload as unknown as UserPayload;
   } catch {
     return null;
   }
