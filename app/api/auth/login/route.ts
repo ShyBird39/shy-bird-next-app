@@ -1,18 +1,18 @@
 import { NextResponse } from 'next/server';
-import { sql } from '@vercel/postgres';
+import { query } from '@/lib/db';
 import bcrypt from 'bcryptjs';
 import { SignJWT } from 'jose';
 
 export async function POST(request: Request) {
   try {
     const { username, password } = await request.json();
+    console.log('Login attempt for:', username);
     
     // Get user from database
-    const result = await sql`
-      SELECT id, username, email, password_hash, role, is_active 
-      FROM users 
-      WHERE username = ${username} AND is_active = true
-    `;
+    const result = await query(
+      'SELECT id, username, email, password_hash, role, is_active FROM users WHERE username = $1 AND is_active = true',
+      [username]
+    );
     
     if (result.rows.length === 0) {
       return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
@@ -27,12 +27,13 @@ export async function POST(request: Request) {
     }
     
     // Get user's locations
-    const locations = await sql`
-      SELECT l.*, ul.can_view, ul.can_edit 
-      FROM user_locations ul
-      JOIN locations l ON ul.location_id = l.id
-      WHERE ul.user_id = ${user.id}
-    `;
+    const locations = await query(
+      `SELECT l.*, ul.can_view, ul.can_edit 
+       FROM user_locations ul
+       JOIN locations l ON ul.location_id = l.id
+       WHERE ul.user_id = $1`,
+      [user.id]
+    );
     
     // Create JWT token
     const secret = new TextEncoder().encode(process.env.JWT_SECRET || 'secret');
@@ -70,6 +71,6 @@ export async function POST(request: Request) {
     return response;
   } catch (error) {
     console.error('Login error:', error);
-    return NextResponse.json({ error: 'Login failed' }, { status: 500 });
+    return NextResponse.json({ error: 'Login failed', details: error.message }, { status: 500 });
   }
 }
